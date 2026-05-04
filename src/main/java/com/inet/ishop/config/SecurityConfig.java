@@ -82,10 +82,11 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) -> {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
                 }))
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ១. បើកសិទ្ធិសេរី
-                        .requestMatchers("/api/auth/**").permitAll()
+                       .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers("/api/orders/add").permitAll()
@@ -95,10 +96,6 @@ public class SecurityConfig {
                         // បើក្នុង DB ប្អូនដាក់ថា "ROLE_ADMIN" នោះក្នុងនេះត្រូវសរសេរ "ROLE_ADMIN" ពេញតែម្តង
                         .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                         .requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
-                        // ក្នុង SecurityConfig.java
-//                        .requestMatchers(HttpMethod.GET, "/api/orders/all").authenticated() // ឱ្យតែ Login គឺឃើញទិន្នន័យ
-//                        .requestMatchers(HttpMethod.PUT, "/api/orders/**").authenticated() // ឱ្យតែ Login គឺចុចប៊ូតុងបាន
-
 
                         // ៣. ផលិតផលសម្រាប់ Admin
                         .requestMatchers("/api/products/**").hasAuthority("ROLE_ADMIN")

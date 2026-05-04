@@ -13,12 +13,19 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
+    @Value("${ishop.app.jwtSecret}")
+    private String jwtSecret;
 
+    @Value("${ishop.app.jwtExpirationMs}")
+    private int jwtExpirationMs;
     // កំណត់ Secret Key និងពេលវេលាផុតកំណត់
-    private final String jwtSecret = "mySecretKeymySecretKeymySecretKeymySecretKey";
-    private final long jwtExpirationMs = 86400000; // 1 ថ្ងៃ
+//    private final String jwtSecret = "mySecretKeymySecretKeymySecretKeymySecretKey";
+//    private final long jwtExpirationMs = 86400000; // 1 ថ្ងៃ
 
     private Key key() {
+        if (jwtSecret == null) {
+            throw new IllegalStateException("JWT Secret is not configured in application.properties!");
+        }
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
