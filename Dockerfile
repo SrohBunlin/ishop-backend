@@ -1,10 +1,14 @@
-# ប្រើ Java 21 JRE សម្រាប់ការរត់ (ឬប្តូរទៅ 26 បើអ្នកមាន Image ផ្លូវការ)
+# ដំណាក់កាលទី ១: Build កូដ
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ដំណាក់កាលទី ២: រត់កម្មវិធី
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-
-# ចម្លងហ្វាយ .jar ដែលយើង Build រួចពីម៉ាស៊ីន Mac ចូលមកក្នុង Docker
-COPY target/*.jar app.jar
-
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
