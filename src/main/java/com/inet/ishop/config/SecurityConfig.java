@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +25,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -101,9 +103,38 @@ public class SecurityConfig {
                         .requestMatchers("/api/products/**").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated()
-                );
+
+                )
+                .headers(headers -> headers
+                        // 1. ការពារការលួចបង្កប់វេបសាយ (Clickjacking) -> ជំនួស X-Frame-Options
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+
+                        // 2. បង្ខំឱ្យប្រើ HTTPS ជានិច្ច -> Strict-Transport-Security (HSTS)
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000) // រយៈពេល ១ ឆ្នាំ
+                        )
+
+                        // 3. ការពារកុំឱ្យ Browser ស្មានប្រភេទហ្វាយខុស -> X-Content-Type-Options
+                        .contentTypeOptions(contentTypeOptions -> {})
+
+                        // 4. កំណត់ច្បាប់សុវត្ថិភាពមាតិកា -> Content-Security-Policy (CSP)
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;")
+                        )
+
+                        // 5. ការពារការលេចធ្លាយព័ត៌មានប្រភពលីង -> Referrer-Policy
+                        .referrerPolicy(referrer -> referrer
+                                .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
+                        )
+                )
+        ;
+
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        // បន្ថែមការកំណត់ Headers នៅទីនេះ៖
+
 
         return http.build();
     }
