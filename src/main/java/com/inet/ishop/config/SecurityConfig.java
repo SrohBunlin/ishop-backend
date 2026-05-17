@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -116,7 +117,8 @@ public class SecurityConfig {
                         )
 
                         // 3. ការពារកុំឱ្យ Browser ស្មានប្រភេទហ្វាយខុស -> X-Content-Type-Options
-                        .contentTypeOptions(contentTypeOptions -> {})
+                        .contentTypeOptions(contentTypeOptions -> {
+                        })
 
                         // 4. កំណត់ច្បាប់សុវត្ថិភាពមាតិកា -> Content-Security-Policy (CSP)
                         .contentSecurityPolicy(csp -> csp
@@ -125,10 +127,11 @@ public class SecurityConfig {
 
                         // 5. ការពារការលេចធ្លាយព័ត៌មានប្រភពលីង -> Referrer-Policy
                         .referrerPolicy(referrer -> referrer
-                                .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
+                        ).permissionsPolicyHeader(permissions -> permissions
+                                .policy("geolocation=(), microphone=(), camera=()")
                         )
-                )
-        ;
+                );
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
