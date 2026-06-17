@@ -1,6 +1,5 @@
 package com.inet.ishop.config;
 
-
 import com.inet.ishop.security.AuthTokenFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +26,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -46,16 +44,11 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        // ១. បង្កើត Object ដោយប្រើ Constructor ទទេ (No-args constructor)
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-        // ២. កំណត់ Service និង Encoder តាមរយៈ Setter methods
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -70,9 +63,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000","https://ishop-frontend-production.up.railway.app")); // URL របស់ React
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        // 1. បើកសិទ្ធិឱ្យ Domain ផលិតកម្មពិតប្រាកដរបស់ប្អូន និង Localhost ធ្វើតេស្ត
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://i-knet.com",
+                "http://i-knet.com",
+                "https://ishop-frontend-production.up.railway.app"
+        ));
+
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // 2. បើកសិទ្ធិឱ្យ Header ទាំងអស់ (Allowed All Headers) ដើម្បីកុំឱ្យទាស់ជាមួយ Cloudflare
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -85,59 +90,51 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) -> {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
                 }))
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                       .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/error").permitAll()
+                        // ច្រកទ្វារសេរីភាពបើកចំហរទូទៅ (Public Endpoints)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 🚨 កែសម្រួលលំដាប់លំដោយ៖ អនុញ្ញាតឱ្យទាញផលិតផល (GET) ជាសាធារណៈជាមុនសិន
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers("/api/orders/add").permitAll()
                         .requestMatchers("/api/orders/stats").authenticated()
 
-                        // ២. កំណត់សិទ្ធិដោយប្រើ hasAuthority (កុំប្រើ hasRole)
-                        // បើក្នុង DB ប្អូនដាក់ថា "ROLE_ADMIN" នោះក្នុងនេះត្រូវសរសេរ "ROLE_ADMIN" ពេញតែម្តង
+                        // ការពារសិទ្ធិសម្រាប់តែ Admin និង Staff លើវិក្កយបត្រ
                         .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
                         .requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
 
-                        // ៣. ផលិតផលសម្រាប់ Admin
-                        .requestMatchers("/api/products/**").hasAuthority("ROLE_ADMIN")
+                        // 🚨 ផលិតផលសម្រាប់ Admin (រាល់ Method ផ្សេងៗក្រៅពី GET ដូចជា POST, PUT, DELETE គឺត្រូវមានសិទ្ធិ ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated()
-
                 )
                 .headers(headers -> headers
-                        // 1. ការពារការលួចបង្កប់វេបសាយ (Clickjacking) -> ជំនួស X-Frame-Options
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-
-                        // 2. បង្ខំឱ្យប្រើ HTTPS ជានិច្ច -> Strict-Transport-Security (HSTS)
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
-                                .maxAgeInSeconds(31536000) // រយៈពេល ១ ឆ្នាំ
+                                .maxAgeInSeconds(31536000)
                         )
+                        .contentTypeOptions(contentTypeOptions -> {})
 
-                        // 3. ការពារកុំឱ្យ Browser ស្មានប្រភេទហ្វាយខុស -> X-Content-Type-Options
-                        .contentTypeOptions(contentTypeOptions -> {
-                        })
-
-                        // 4. កំណត់ច្បាប់សុវត្ថិភាពមាតិកា -> Content-Security-Policy (CSP)
+                        // 🚨 កែសម្រួល CSP ឱ្យបើកចំហរទូលំទូលាយជាងមុន ដើម្បីកុំឱ្យស្ទះការទាញស្គ្រីបពីក្រៅ
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;")
+                                .policyDirectives("default-src 'self' * data: blob: 'unsafe-inline' 'unsafe-eval';")
                         )
-
-                        // 5. ការពារការលេចធ្លាយព័ត៌មានប្រភពលីង -> Referrer-Policy
                         .referrerPolicy(referrer -> referrer
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
-                        ).permissionsPolicyHeader(permissions -> permissions
+                        )
+                        .permissionsPolicyHeader(permissions -> permissions
                                 .policy("geolocation=(), microphone=(), camera=()")
                         )
                 );
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        // បន្ថែមការកំណត់ Headers នៅទីនេះ៖
-
 
         return http.build();
     }
