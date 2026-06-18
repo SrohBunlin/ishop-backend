@@ -127,7 +127,7 @@ public class SecurityConfig {
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         // ១. អនុញ្ញាត JavaScript ពីក្នុងប្រព័ន្ធ, Bootstrap CDN និង Cloudflare
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; " +
                                         // ២. អនុញ្ញាត CSS Style ពីក្នុងប្រព័ន្ធ និង Bootstrap CDN
                                         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
                                         // ៣. អនុញ្ញាត រូបភាព blob, data, ទីតាំងទំនិញពិត និង placeholder
