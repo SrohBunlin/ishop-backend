@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productDetails.getName());
         product.setPrice(productDetails.getPrice());
         product.setStockQuantity(productDetails.getStockQuantity());
-        product.setImageUrl(productDetails.getImageUrl());
+        product.setImage(productDetails.getImage());
 
         // ក្នុងករណីមាន Category ដែរ
         if(productDetails.getCategory() != null) {

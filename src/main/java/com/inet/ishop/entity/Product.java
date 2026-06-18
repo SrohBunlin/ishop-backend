@@ -17,12 +17,11 @@ public class Product {
 
     @Column(nullable = false)
     private String name;
-
     private Double price;
     private Integer stockQuantity;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    private String imageUrl; // សម្រាប់ទុក URL នៃរូបភាព
+    private String image;
 }
