@@ -34,7 +34,7 @@ public class ProductController {
 
         try {
             // ១. កំណត់ទីតាំង Folder ផ្ទុករូបភាព (ត្រូវនឹងទីតាំងដែលយើងចង Volume ក្នុង Docker)
-            String uploadDir = "/app/images/";
+            String uploadDir = "/images/";
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename(); // បង្កើតឈ្មោះកុំឱ្យជាន់គ្នា
             Path uploadPath = Paths.get(uploadDir);
 
