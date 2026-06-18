@@ -123,11 +123,11 @@ public class SecurityConfig {
                         )
                         .contentTypeOptions(contentTypeOptions -> {})
 
-                        // 🚨 កែសម្រួល CSP ឱ្យបើកចំហរទូលំទូលាយជាងមុន ដើម្បីកុំឱ្យស្ទះការទាញស្គ្រីបពីក្រៅ
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; https://cloudflareinsights.com; " +
-                                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                                        // បន្ថែម https://static.cloudflareinsights.com និង https://cloudflareinsights.com
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://cloudflareinsights.com; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
                                         "img-src 'self' data: blob: https://via.placeholder.com https://api.i-knet.com; " +
                                         "connect-src 'self' https://api.i-knet.com https://ishop-frontend-production.up.railway.app http://localhost:3000 *;")
                         )
