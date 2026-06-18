@@ -111,6 +111,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN")
 
+                        .requestMatchers("/images/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers
