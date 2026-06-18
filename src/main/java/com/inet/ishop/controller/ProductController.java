@@ -27,19 +27,25 @@ public class ProductController {
     private final ProductService productService;
     private final String uploadDir = "/app/images/";
 
+    // ==========================================
     // ១. មើលផលិតផលទាំងអស់ (Public)
+    // ==========================================
     @GetMapping("/all")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-    // ២. មើលផលិតផលតាម ID
+    // ==========================================
+    // ២. មើលផលិតផលតាម ID (Public)
+    // ==========================================
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    // ៣. បន្ថែមផលិតផលថ្មី (ADMIN តែប៉ុណ្ណោះ) - កែសម្រួលឱ្យទទួលទាំងទិន្នន័យ និងរូបភាពក្នុងពេលតែមួយ
+    // ==========================================
+    // ៣. បន្ថែមផលិតផលថ្មី (ADMIN តែប៉ុណ្ណោះ)
+    // ==========================================
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(
@@ -49,7 +55,7 @@ public class ProductController {
             @RequestParam("image") MultipartFile file) {
 
         try {
-            // រៀបចំរក្សាទុកឯកសាររូបភាពចូលទៅក្នុង Folder /app/images/
+            // បង្កើតឈ្មោះ File កុំឱ្យជាន់គ្នា និងកំណត់ទីតាំង Folder (/app/images/)
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             Path uploadPath = Paths.get(uploadDir);
 
@@ -57,20 +63,21 @@ public class ProductController {
                 Files.createDirectories(uploadPath);
             }
 
+            // រក្សាទុកឯកសាររូបភាពពិតប្រាកដចូលទៅក្នុង Server Disk
             try (InputStream inputStream = file.getInputStream()) {
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // បង្កើតលីង URL រូបភាពដើម្បីញាត់ចូល Database
+            // បង្កើតលីង URL សម្រាប់ហៅមើលរូបភាព (ត្រូវនឹង WebConfig Resource Handler)
             String imageUrl = "/images/" + fileName;
 
-            // បង្កើត Object ផលិតផលថ្មី រួចរក្សាទុកទៅក្នុង Database តាម Service
+            // ចាប់ផ្តើមរក្សាទុកទៅក្នុង Database
             Product product = new Product();
             product.setName(name);
             product.setPrice(price);
             product.setStockQuantity(stockQuantity);
-            product.setImageUrl(imageUrl);
+            product.setImage(imageUrl);
 
             Product savedProduct = productService.saveProduct(product);
             return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
@@ -81,7 +88,9 @@ public class ProductController {
         }
     }
 
-    // ៤. កែសម្រួលផលិតផល (ADMIN តែប៉ុណ្ណោះ) - បំពេញកូដឱ្យដើរពិតប្រាកដ
+    // ==========================================
+    // ៤. កែសម្រួលផលិតផល (ADMIN តែប៉ុណ្ណោះ)
+    // ==========================================
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateProduct(
@@ -98,12 +107,12 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("រកមិនឃើញទំនិញនេះឡើយ!");
             }
 
-            // កែប្រែទិន្នន័យអក្សរ និងលេខ
+            // ធ្វើបច្ចុប្បន្នភាពទិន្នន័យអក្សរ និងលេខ
             existingProduct.setName(name);
             existingProduct.setPrice(price);
             existingProduct.setStockQuantity(stockQuantity);
 
-            // ប្រសិនបើអ្នកប្រើប្រាស់មានការ Upload រូបភាពថ្មីមកជំនួស
+            // ពិនិត្យមើលថាតើមានការ Upload រូបភាពថ្មីមកប្តូរដែរឬទេ
             if (image != null && !image.isEmpty()) {
                 String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
                 Path uploadPath = Paths.get(uploadDir);
@@ -116,8 +125,8 @@ public class ProductController {
                     Path filePath = uploadPath.resolve(fileName);
                     Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
                 }
-                // ប្តូរលីងរូបភាពថ្មី
-                existingProduct.setImageUrl("/images/" + fileName);
+                // ដូរលីងរូបភាពទៅជារូបភាពថ្មី
+                existingProduct.setImage("/images/" + fileName);
             }
 
             // រក្សាទុកការផ្លាស់ប្តូរចូល Database
@@ -130,7 +139,9 @@ public class ProductController {
         }
     }
 
+    // ==========================================
     // ៥. លុបផលិតផល (ADMIN តែប៉ុណ្ណោះ)
+    // ==========================================
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
