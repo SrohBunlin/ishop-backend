@@ -126,13 +126,9 @@ public class SecurityConfig {
                         // 🚨 កែសម្រួល CSP ឱ្យបើកចំហរទូលំទូលាយជាងមុន ដើម្បីកុំឱ្យស្ទះការទាញស្គ្រីបពីក្រៅ
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        // ១. អនុញ្ញាត JavaScript ពីក្នុងប្រព័ន្ធ, Bootstrap CDN និង Cloudflare
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; " +
-                                        // ២. អនុញ្ញាត CSS Style ពីក្នុងប្រព័ន្ធ និង Bootstrap CDN
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; https://cloudflareinsights.com; " +
                                         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-                                        // ៣. អនុញ្ញាត រូបភាព blob, data, ទីតាំងទំនិញពិត និង placeholder
                                         "img-src 'self' data: blob: https://via.placeholder.com https://api.i-knet.com; " +
-                                        // ៤. អនុញ្ញាត ការតភ្ជាប់ API ទូទៅ
                                         "connect-src 'self' https://api.i-knet.com https://ishop-frontend-production.up.railway.app http://localhost:3000 *;")
                         )
                         .referrerPolicy(referrer -> referrer
