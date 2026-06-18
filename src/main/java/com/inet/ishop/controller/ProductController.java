@@ -25,44 +25,10 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final String uploadDir = "/app/images/";
 
-    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addProduct(
-            @RequestParam("name") String name,
-            @RequestParam("price") double price,
-            @RequestPart("image") MultipartFile file) {
-
-        try {
-            // ១. កំណត់ទីតាំង Folder ផ្ទុករូបភាព (ត្រូវនឹងទីតាំងដែលយើងចង Volume ក្នុង Docker)
-            String uploadDir = "/app/images/";
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename(); // បង្កើតឈ្មោះកុំឱ្យជាន់គ្នា
-            Path uploadPath = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath); // បង្កើត Folder បើមិនទាន់មាន
-            }
-
-            // ២. រក្សាទុកឯកសាររូបភាពពិតប្រាកដចូលទៅក្នុង Folder
-            try (InputStream inputStream = file.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            // ៣. បង្កើតលីង URL រូបភាពដើម្បីញាត់ចូល Database (ឧទាហរណ៍៖ /images/1712345_iphone.png)
-            String imageUrl = "/images/" + fileName;
-
-            // កូដរក្សាទុកទៅក្នុង Database របស់ប្អូន...
-            // productRepository.save(new Product(name, price, imageUrl));
-
-            return ResponseEntity.ok("Product added successfully with image path: " + imageUrl);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not save image: " + e.getMessage());
-        }
-    }
-    // ១. មើលផលិតផលទាំងអស់ (Public - ប្រើតែមួយបានហើយ)
+    // ១. មើលផលិតផលទាំងអស់ (Public)
     @GetMapping("/all")
-   // @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
@@ -73,22 +39,98 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    // ៣. បន្ថែមផលិតផលថ្មី (ADMIN តែប៉ុណ្ណោះ)
-    @PostMapping("/add")
+    // ៣. បន្ថែមផលិតផលថ្មី (ADMIN តែប៉ុណ្ណោះ) - កែសម្រួលឱ្យទទួលទាំងទិន្នន័យ និងរូបភាពក្នុងពេលតែមួយ
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        return new ResponseEntity<>(productService.saveProduct(product), HttpStatus.CREATED);
+    public ResponseEntity<?> createProduct(
+            @RequestParam("name") String name,
+            @RequestParam("price") double price,
+            @RequestParam("stockQuantity") int stockQuantity,
+            @RequestParam("image") MultipartFile file) {
+
+        try {
+            // រៀបចំរក្សាទុកឯកសាររូបភាពចូលទៅក្នុង Folder /app/images/
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get(uploadDir);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            try (InputStream inputStream = file.getInputStream()) {
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // បង្កើតលីង URL រូបភាពដើម្បីញាត់ចូល Database
+            String imageUrl = "/images/" + fileName;
+
+            // បង្កើត Object ផលិតផលថ្មី រួចរក្សាទុកទៅក្នុង Database តាម Service
+            Product product = new Product();
+            product.setName(name);
+            product.setPrice(price);
+            product.setStockQuantity(stockQuantity);
+            product.setImageUrl(imageUrl);
+
+            Product savedProduct = productService.saveProduct(product);
+            return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("មិនអាចរក្សាទុករូបភាពបានឡើយ: " + e.getMessage());
+        }
     }
 
-    // ៤. កែសម្រួលផលិតផល (ADMIN តែប៉ុណ្ណោះ)
-    @PutMapping("/{id}")
+    // ៤. កែសម្រួលផលិតផល (ADMIN តែប៉ុណ្ណោះ) - បំពេញកូដឱ្យដើរពិតប្រាកដ
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
-        Product updatedProduct = productService.updateProduct(id, productDetails);
-        return ResponseEntity.ok(updatedProduct);
+    public ResponseEntity<?> updateProduct(
+            @PathVariable Long id,
+            @RequestParam("name") String name,
+            @RequestParam("price") Double price,
+            @RequestParam("stockQuantity") Integer stockQuantity,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+
+        try {
+            // ទាញយកទិន្នន័យផលិតផលចាស់ពី Database មកពិនិត្យ
+            Product existingProduct = productService.getProductById(id);
+            if (existingProduct == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("រកមិនឃើញទំនិញនេះឡើយ!");
+            }
+
+            // កែប្រែទិន្នន័យអក្សរ និងលេខ
+            existingProduct.setName(name);
+            existingProduct.setPrice(price);
+            existingProduct.setStockQuantity(stockQuantity);
+
+            // ប្រសិនបើអ្នកប្រើប្រាស់មានការ Upload រូបភាពថ្មីមកជំនួស
+            if (image != null && !image.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+                Path uploadPath = Paths.get(uploadDir);
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                try (InputStream inputStream = image.getInputStream()) {
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                }
+                // ប្តូរលីងរូបភាពថ្មី
+                existingProduct.setImageUrl("/images/" + fileName);
+            }
+
+            // រក្សាទុកការផ្លាស់ប្តូរចូល Database
+            Product updatedProduct = productService.saveProduct(existingProduct);
+            return ResponseEntity.ok(updatedProduct);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("មានបញ្ហាក្នុងការរក្សាទុករូបភាពថ្មី: " + e.getMessage());
+        }
     }
 
-    // ៥. លុបផលិតផល (ADMIN តែប៉ុណ្ណោះ - បន្ថែម Security)
+    // ៥. លុបផលិតផល (ADMIN តែប៉ុណ្ណោះ)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
