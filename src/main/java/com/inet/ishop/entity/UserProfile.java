@@ -1,17 +1,27 @@
 package com.inet.ishop.entity;
 
 import jakarta.persistence.*; // ប្រើ jakarta.persistence សម្រាប់ Spring Boot 3+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_profile")
+@Data // ជំនួសឱ្យការសរសេរ Getter/Setter ខ្លួនឯង
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserProfile {
 
     @Id
     @Column(name = "user_id")
     private Long userId;
 
+    // នេះគឺជាកន្លែងដែលប្អូនរក្សាទុក URL របស់រូបភាព
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
@@ -28,7 +38,5 @@ public class UserProfile {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Constructors, Getters, និង Setters (ដូចដែលអ្នកបានសរសេររួច)
-    public UserProfile() {}
     // ... បន្ថែម Getters/Setters របស់អ្នកនៅទីនេះ
 }

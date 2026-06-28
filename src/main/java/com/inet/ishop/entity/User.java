@@ -6,13 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class User {
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id", referencedColumnName = "user_id")
+    private UserProfile userProfile;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,4 +32,16 @@ public class User {
     private String role; // ឧទាហរណ៍៖ "ROLE_ADMIN"
 
     private boolean enabled = true; // បន្ថែមនេះដើម្បីឱ្យស៊ីជាមួយ SQL 'enabled'
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    public void setAvatarUrl(String s) {
+    }
+
+    public String getAvatarUrl() {
+        return "";
+    }
 }
