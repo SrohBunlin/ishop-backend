@@ -7,10 +7,7 @@ import com.inet.ishop.repository.UserProfileRepository;
 import com.inet.ishop.repository.UserRepository;
 import com.inet.ishop.service.FileStorageService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
@@ -18,6 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "https://i-knet.com")
 public class UserController {
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
