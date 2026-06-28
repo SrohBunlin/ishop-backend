@@ -27,7 +27,7 @@ public class UserController {
         this.userProfileRepository = userProfileRepository;
     }
 
-    @PutMapping("/user") // កុំសរសេរ /api/api/user
+    @PutMapping("/users") // កុំសរសេរ /api/api/user
     public ResponseEntity<?> updateProfile(
             Principal principal,
             @RequestParam("first_name") String firstName,
