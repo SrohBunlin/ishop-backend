@@ -9,13 +9,24 @@ import java.nio.file.Paths;
 
 @Service
 public class FileStorageService {
-    private final Path root = Paths.get("uploads");
+    // កំណត់ path ក្នុង container ឱ្យច្បាស់លាស់
+    private final Path root = Paths.get("/app/uploads");
+
+    public FileStorageService() {
+        try {
+            // បង្កើត directory ប្រសិនបើវាមិនទាន់មាន
+            Files.createDirectories(root);
+        } catch (Exception e) {
+            throw new RuntimeException("មិនអាចបង្កើត Folder ផ្ទុកឯកសារបាន!");
+        }
+    }
 
     public void store(MultipartFile file, String filename) {
         try {
             Files.copy(file.getInputStream(), this.root.resolve(filename));
         } catch (Exception e) {
-            throw new RuntimeException("មិនអាចរក្សាទុកឯកសារបាន!");
+            e.printStackTrace(); // បន្ថែមដើម្បីងាយស្រួល Debug
+            throw new RuntimeException("មិនអាចរក្សាទុកឯកសារបាន: " + e.getMessage());
         }
     }
 }
