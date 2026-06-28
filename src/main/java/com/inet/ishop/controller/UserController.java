@@ -27,7 +27,7 @@ public class UserController {
         this.userProfileRepository = userProfileRepository;
     }
 
-    @PutMapping("/users") // កុំសរសេរ /api/api/user
+    @PutMapping("/users")
     public ResponseEntity<?> updateProfile(
             Principal principal,
             @RequestParam("first_name") String firstName,
@@ -47,22 +47,26 @@ public class UserController {
             UserProfile profile = user.getUserProfile();
             if (profile == null) {
                 profile = new UserProfile();
-                profile.setUserId(user.getId());
+                profile.setUserId(user.getId()); // ប្រសិនបើមានបញ្ហា សូមសាកដូរទៅ profile.setUser(user);
             }
 
             if (avatar != null && !avatar.isEmpty()) {
                 String fileName = STR."\{UUID.randomUUID().toString()}_\{avatar.getOriginalFilename()}";
                 this.fileStorageService.store(avatar, fileName);
                 profile.setProfilePictureUrl(STR."/uploads/\{fileName}");
-                userProfileRepository.save(profile);
             }
 
+            // ផ្លាស់ទីការ Save មកខាងក្រៅវិញ
+            userProfileRepository.save(profile);
             userRepository.save(user);
 
             UserDTO updatedUserDTO = new UserDTO(user.getFirstName(), user.getLastName(), profile.getProfilePictureUrl());
             return ResponseEntity.ok(updatedUserDTO);
 
         } catch (Exception e) {
+            // បន្ថែមបន្ទាត់នេះ ដើម្បីឱ្យវាព្រីនអក្សរក្រហមក្នុង Docker ងាយស្រួលមើលថ្ងៃក្រោយ
+            e.printStackTrace();
+
             return ResponseEntity.status(500).body(STR."បរាជ័យក្នុងការ Update Profile: \{e.getMessage()}");
         }
     }
