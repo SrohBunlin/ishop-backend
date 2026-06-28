@@ -9,11 +9,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     // ស្វែងរកអ្នកប្រើប្រាស់តាមរយៈ Username (ប្រើសម្រាប់ Authentication)
-    static Optional<User> findByUsername(String name) {
-        return Optional.empty();
-    }
-
-    static void Save() {
+    static Optional<User> findByUsername(String username) {
+        return null;
     }
 
 }
