@@ -9,10 +9,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // បន្ថែម Domain ពិតប្រាកដរបស់ប្អូនចូលទៅក្នុង Array នេះ
-                .allowedOrigins("http://localhost:3000", "https://i-knet.com")
+                // ប្តូរពី "*" មកដាក់ Domain របស់ប្អូនផ្ទាល់
+                .allowedOrigins("https://i-knet.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true); // នៅតែទុក true ព្រោះប្អូនត្រូវការផ្ញើ Authorization Header
     }
 }
