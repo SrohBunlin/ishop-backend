@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users") // ១. ប្តូរទៅជា /api/users ឱ្យត្រូវនឹងអ្វីដែលលោតក្នុង Error (path: "/api/users")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
 
     @Autowired
