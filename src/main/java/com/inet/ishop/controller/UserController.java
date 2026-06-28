@@ -52,7 +52,7 @@ public class UserController {
 
             if (avatar != null && !avatar.isEmpty()) {
                 String fileName = STR."\{UUID.randomUUID().toString()}_\{avatar.getOriginalFilename()}";
-                fileStorageService.store(avatar, fileName);
+                this.fileStorageService.store(avatar, fileName);
                 profile.setProfilePictureUrl(STR."/uploads/\{fileName}");
                 userProfileRepository.save(profile);
             }
