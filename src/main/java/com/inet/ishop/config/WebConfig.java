@@ -13,6 +13,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:/app/images/");
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:/app/upload/");
     }
 
     // 🟢 ២. បន្ថែមផ្នែកនេះចូល ដើម្បីដោះស្រាយបញ្ហា "CORS error" (ធ្វើឱ្យបន្ថែមទំនិញបានជោគជ័យ)
