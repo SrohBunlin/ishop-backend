@@ -19,7 +19,13 @@ public class UserController {
         // កន្លែងនេះប្អូនអាចកែសម្រួលដើម្បី Return ជា Object ឬទិន្នន័យ User ចេញពី Database នៅពេលក្រោយ
         return ResponseEntity.ok("តេស្ត៖ ភ្ជាប់ទៅកាន់ Endpoint របស់ User ជោគជ័យ!");
     }
-
+    // បន្ថែមចំណុចនេះសម្រាប់ទទួលការ Update / ផ្ទុកទិន្នន័យពី Form
+    @PostMapping // ឬអាចដូរទៅជា @PutMapping បើ Frontend របស់ប្អូនហៅ PUT
+    public ResponseEntity<String> saveOrUpdateUser() {
+        // នៅទីនេះប្អូននឹងត្រូវសរសេរ Logic ទទួលយកឈ្មោះ, នាមត្រកូល និងរូបភាព
+        // ឧទាហរណ៍: ហៅ UserService ដើម្បី Save ចូល Database
+        return ResponseEntity.ok("ទិន្នន័យ User ទទួលបានជោគជ័យ!");
+    }
     // នេះជាកន្លែងដែលប្អូនហៅពី Frontend សម្រាប់ Upload រូបភាព៖ /api/users/upload-profile/{id}
     @PostMapping("/upload-profile/{id}")
     public ResponseEntity<String> uploadProfileImage(@PathVariable String id,
