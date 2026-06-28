@@ -15,7 +15,4 @@ public class UserProfileService {
         return repository.findById(userId).orElse(null);
     }
 
-    public UserProfile saveProfile(UserProfile profile) {
-        return repository.save(profile);
-    }
 }

@@ -36,7 +36,7 @@ public class UserController {
 
         try {
             // ១. ស្វែងរក User
-            User user = UserRepository.findByUsername(principal.getName())
+            User user = this.userRepository.findByUsername(principal.getName())
                     .orElseThrow(() -> new RuntimeException("រកមិនឃើញអ្នកប្រើប្រាស់"));
 
             // ២. Update ឈ្មោះ
