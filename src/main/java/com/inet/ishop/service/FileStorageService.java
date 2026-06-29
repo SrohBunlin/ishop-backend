@@ -12,7 +12,7 @@ import java.nio.file.StandardCopyOption;
 @Service
 public class FileStorageService {
     // ប្រើ Path នេះដែលជា Storage របស់ប្អូន
-    private final Path root = Paths.get(System.getProperty("user.home"), "ishop-uploads");
+    private final Path root = Paths.get(System.getProperty("user.home"), "uploads");
 
     public FileStorageService() {
         try {
